@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # drag
 
 > A Vue.js project
@@ -16,3 +17,6 @@ npm run build
 ```
 
 For detailed explanation on how things work, consult the [docs for vue-loader](http://vuejs.github.io/vue-loader).
+=======
+# dragcomponent
+>>>>>>> 021cdc9ebfe9bd0d7c49c50ea34c70e4557fa70e
