@@ -1,60 +1,94 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-      <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-      <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-    </ul>
+  <div>
+     <div class="drag-box" id="dragBox">
+       
+
+
+     </div>
+ 
   </div>
 </template>
 
 <script>
 export default {
-  name: 'app',
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+       dragDat:[
+          {
+            "tit":"标题1",
+            "content":"内容1"
+          },
+           {
+            "tit":"标题2",
+            "content":"内容2"
+          },
+           {
+            "tit":"标题3",
+            "content":"内容3"
+          },
+          {
+            "tit":"标题4",
+            "content":"内容4"
+          }
+       ],
+       itemArr:[],
+       boxContent:""
     }
+  },
+  methods:{
+    boxCreateFun(){
+        this.boxContent=$("#dragBox");
+        this.dragDat.forEach((item,key)=>{
+           let str=$("<div class='drag-item'><div class='drag-item-tit'>"+item.tit+"<div><div class='drag-item-content'>"+item.content+"</div></div>");
+           this.itemArr.push(str);
+        })
+        this.itemArr.forEach((item)=>{
+           this.boxContent.append(item);
+        })
+        this.boxContent.find(".drag-item").each(function(ind){
+            let $h=$(this).height();
+            $(this).css({"left":0,"top":$h*ind});
+        })
+        this.dragInitFun();
+    },
+    dragInitFun(){
+        this.itemArr.forEach((item,ind)=>{
+           this.dragRunFun(item,ind);
+        })
+    },
+    dragRunFun(item,ind){
+        let draging;
+        let xPos,yPos,lef,top,item1;
+        item.on("mousedown",(event)=>{
+            let evt=event.originalEvent;
+            xPos=evt.pageX;
+            yPos=evt.pageY;
+            item1=item.clone(true);
+            this.boxContent.append(item1);
+            lef=parseInt(item1.css("left"));
+            top=parseInt(item1.css("top"));
+            draging=true;
+        })
+        $(document).on("mousemove",(event)=>{
+          if(draging){
+             let evt=event.originalEvent;
+             let diffX=evt.pageX-xPos;
+             let diffY=evt.pageY-yPos;
+             $(item1).css({"left":lef+diffX+"px","top":top+diffY+"px"});  
+          }  
+       })
+       $(document).mouseup(()=>{
+           $(item1).remove();
+           draging=false;
+       })
+        
+    }
+
+  },
+  mounted(){
+    this.boxCreateFun();
   }
 }
 </script>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 
-h1, h2 {
-  font-weight: normal;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-a {
-  color: #42b983;
-}
-</style>
