@@ -7,17 +7,37 @@ Vue.directive("drag",{
        }
        let itemArr=[];
        let boxContent=$("#"+el.id);
+       let itemArrBox=boxContent.find(".drag-item"); 
        dragInitFun();
-       function dragInitFun(){
-           let objArr=boxContent.find(".drag-item");      
-           objArr.each((ind)=>{
-             itemArr.push(objArr.eq(ind));
-             dragRunFun(objArr.eq(ind),ind);
+       /**
+        * 获得拖拽元素容器
+        * @return {[type]} [description]
+        */
+       function dragInitFun(){   
+           itemArrBox.each((ind)=>{
+             itemArr.push(itemArrBox.eq(ind));
+             dragRunFun(itemArrBox.eq(ind),ind);
            })
+           setNumFun();
        }
+       /**
+        * [设置编号]
+        */
+       function setNumFun(){  
+           let objBox=boxContent.find(".drag-item"); 
+           objBox.each((ind)=>{
+              objBox.eq(ind).attr("index-num",ind);
+           })  
+       }
+       /**
+        * 拖拽事件处理
+        * @param  {[type]} item [拖拽元素]
+        * @param  {[type]} ind  [拖拽元素编号]
+        * @return {[type]}      [description]
+        */
        function dragRunFun(item,ind){  
            let draging;
-           let xPos,yPos,lef,top,itemcopy,valX,valY,maxX,maxY;
+           let xPos,yPos,lef,top,itemcopy,valX,valY,maxX,maxY,targetObj;
            let itemW=item.width();
            let itemH=item.height();
            item.on("mousedown",(event)=>{
@@ -27,7 +47,8 @@ Vue.directive("drag",{
                lef=item.position().left;
                top=item.position().top;
                itemcopy=item.clone(true);
-               itemcopy.addClass("drag-pos");
+               itemcopy.attr("index-num",item.attr("index-num"));
+               itemcopy.css({"position":"absolute"});
                itemcopy.css({"top":top,"left":lef});
                boxContent.append(itemcopy);
                draging=true;
@@ -40,17 +61,20 @@ Vue.directive("drag",{
                 let diffY=evt.pageY-yPos;
                 valX=lef+diffX;
                 valY=top+diffY;
-                maxX=$(window).width()-itemW;
+                //maxX=$(window).width()-itemW;
                 maxY=boxContent.height()-itemH;
-                valX = 0;
                 valY = Math.min(Math.max(0,valY),maxY);
-                $(itemcopy).css({"left":valX,"top":valY});  
+                $(itemcopy).css({"left":valX,"top":valY}); 
+                setNumFun(); 
                 itemArr.forEach((obj,key)=>{
-                    if(crashTest($(itemcopy),obj)){
-                       obj.addClass("drag-set");
-                    }else{
-                       obj.removeClass("drag-set");
-                    }
+                  if(crashTest(itemcopy,obj)){
+                     obj.addClass("drag-set");
+                     targetObj=obj;
+                     itemcopy.attr("index-num",obj.attr("index-num"));
+                     itemSetFun(item,obj);
+                  }else{
+                     obj.removeClass("drag-set");
+                  }
                 })
              }
              event.preventDefault();  
@@ -58,22 +82,46 @@ Vue.directive("drag",{
           $(document).on("mouseup",()=>{
               if(draging){
                 itemArr.forEach((obj,key)=>{
-                    obj.removeClass("drag-set");
-                    if(crashTest($(itemcopy),obj)){
-                       posSetFun(item,obj,ind,key,$(itemcopy));
-                    }
-                })
+                  obj.removeClass("drag-set");
+                })  
               } 
+              setNumFun();
               item.on("mousedown",null);
               $(document).on("mousemove",null);
-              $(itemcopy).remove();
+              if(targetObj){
+                animFun(targetObj,itemcopy);
+              }
               draging=false; 
           })  
        }
-       function posSetFun(obj1,obj2,ind,key,itemcopy){  //调整完之后
-          obj2.after(obj1[0]);
-          itemcopy.remove();
+       function animFun(obj1,obj2){
+          let targetTop=obj1.position().top;
+          let targetLeft=obj1.position().left;
+          obj2.animate({top:targetTop,left:targetLeft},300,function(){
+             $(obj2).remove();
+          })
        }
+       /**
+        * [posSetFun description]
+        * @param  {[type]} obj1     [拖拽元素]
+        * @param  {[type]} obj2     [目标元素]
+        * @param  {[type]} ind      [拖拽元素编号]
+        */
+       function itemSetFun(obj1,obj2){  
+          let num=obj2.attr("index-num");
+          let ind=obj1.attr("index-num");
+          if(ind<num){
+            obj2.after(obj1[0]);
+          }else{
+            obj2.before(obj1[0]);
+          }  
+       }
+       /**
+        * 碰撞检测
+        * @param  {[type]} obj1 [调整对象]
+        * @param  {[type]} obj2 [列表对象]
+        * @return {[type]}      [description]
+        */
        function crashTest(obj1,obj2){
           let t1=obj1.position().top;
           let t2=obj2.position().top;
