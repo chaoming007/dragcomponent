@@ -19,15 +19,30 @@ Vue.directive("drag",{
              dragRunFun(itemArrBox.eq(ind),ind);
            })
            setNumFun();
+           setDatNum();
        }
        /**
         * [设置编号]
         */
        function setNumFun(){  
-           let objBox=boxContent.find(".drag-item"); 
-           objBox.each((ind)=>{
-              objBox.eq(ind).attr("index-num",ind);
-           })  
+         let objBox=boxContent.find(".drag-item"); 
+         objBox.each((ind)=>{
+            objBox.eq(ind).attr("index-num",ind);
+         })  
+       }
+       function setDatNum(){
+          itemArrBox.each((ind)=>{
+            itemArrBox.eq(ind).attr("data-num",ind);
+          })
+       }
+       function callBackFun(){
+         let numDatArr=[];
+         let objBox=boxContent.find(".drag-item");
+         objBox.each((ind)=>{
+            let num=objBox.eq(ind).attr("data-num");
+            numDatArr.push(num);
+         })
+          console.log(numDatArr); 
        }
        /**
         * 拖拽事件处理
@@ -37,7 +52,7 @@ Vue.directive("drag",{
         */
        function dragRunFun(item,ind){  
            let draging;
-           let xPos,yPos,lef,top,itemcopy,valX,valY,maxX,maxY,targetObj;
+           let xPos,yPos,lef,top,itemcopy,valX,valY,maxX,maxY,targetObj=null;
            let itemW=item.width();
            let itemH=item.height();
            item.on("mousedown",(event)=>{
@@ -74,6 +89,7 @@ Vue.directive("drag",{
                      itemSetFun(item,obj);
                   }else{
                      obj.removeClass("drag-set");
+                     // targetObj=null;
                   }
                 })
              }
@@ -99,6 +115,7 @@ Vue.directive("drag",{
           let targetLeft=obj1.position().left;
           obj2.animate({top:targetTop,left:targetLeft},300,function(){
              $(obj2).remove();
+             callBackFun();
           })
        }
        /**
