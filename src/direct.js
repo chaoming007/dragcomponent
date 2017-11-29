@@ -8,7 +8,6 @@ Vue.directive("drag",{
        let itemArr=[];
        let boxContent=$("#"+el.id);
        let itemArrBox=boxContent.find(".drag-item"); 
-       let animTuff=true;
       
        dragInitFun();
        /**
@@ -57,7 +56,7 @@ Vue.directive("drag",{
            let draging=false;
            let itemW=item.width();
            let itemH=item.height();
-           item.on("mousedown",(event)=>{
+           item.mousedown((event)=>{
                let evt=event.originalEvent;
                xPos=evt.pageX;
                yPos=evt.pageY;
@@ -71,7 +70,7 @@ Vue.directive("drag",{
                draging=true;
                event.preventDefault();
                
-               $(document).on("mousemove",(event)=>{
+               $(document).mousemove((event)=>{
                  if(draging){
                     let evt=event.originalEvent;
                     let diffX=evt.pageX-xPos;
@@ -97,19 +96,19 @@ Vue.directive("drag",{
                  }
                  event.preventDefault();  
               })
-              $(document).on("mouseup",()=>{
+              $(document).mouseup(()=>{
+                  setNumFun();
                   if(draging){
                     itemArr.forEach((obj,key)=>{
                       obj.removeClass("drag-set");
-                    })  
+                    })
+                    if(targetObj){
+                      animFun(targetObj,itemcopy);
+                    }  
                   } 
-                  setNumFun();
-                  item.on("mousedown",null);
-                  $(document).on("mousemove",null);
-                  if(targetObj&&animTuff){
-                    //animTuff=false;
-                    animFun(targetObj,itemcopy);
-                  }
+                  
+                  item.mousedown(function(){});
+                  $(document).mousemove(function(){});
                   draging=false; 
               })  
  
@@ -121,7 +120,6 @@ Vue.directive("drag",{
           let targetLeft=obj1.position().left;
           obj2.animate({top:targetTop,left:targetLeft},300,function(){
              $(obj2).remove();
-             animTuff=true;
              callBackFun();
           })
        }
