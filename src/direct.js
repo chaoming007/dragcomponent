@@ -8,6 +8,8 @@ Vue.directive("drag",{
        let itemArr=[];
        let boxContent=$("#"+el.id);
        let itemArrBox=boxContent.find(".drag-item"); 
+       let animTuff=true;
+      
        dragInitFun();
        /**
         * 获得拖拽元素容器
@@ -51,8 +53,8 @@ Vue.directive("drag",{
         * @return {[type]}      [description]
         */
        function dragRunFun(item,ind){  
-           let draging;
-           let xPos,yPos,lef,top,itemcopy,valX,valY,maxX,maxY,targetObj=null;
+           let xPos,yPos,lef,top,itemcopy,valX,valY,maxX,maxY,targetObj;
+           let draging=false;
            let itemW=item.width();
            let itemH=item.height();
            item.on("mousedown",(event)=>{
@@ -68,53 +70,58 @@ Vue.directive("drag",{
                boxContent.append(itemcopy);
                draging=true;
                event.preventDefault();
-           })
-           $(document).on("mousemove",(event)=>{
-             if(draging){
-                let evt=event.originalEvent;
-                let diffX=evt.pageX-xPos;
-                let diffY=evt.pageY-yPos;
-                valX=lef+diffX;
-                valY=top+diffY;
-                //maxX=$(window).width()-itemW;
-                maxY=boxContent.height()-itemH;
-                valY = Math.min(Math.max(0,valY),maxY);
-                $(itemcopy).css({"left":valX,"top":valY}); 
-                setNumFun(); 
-                itemArr.forEach((obj,key)=>{
-                  if(crashTest(itemcopy,obj)){
-                     obj.addClass("drag-set");
-                     targetObj=obj;
-                     itemcopy.attr("index-num",obj.attr("index-num"));
-                     itemSetFun(item,obj);
-                  }else{
-                     obj.removeClass("drag-set");
-                     // targetObj=null;
+               
+               $(document).on("mousemove",(event)=>{
+                 if(draging){
+                    let evt=event.originalEvent;
+                    let diffX=evt.pageX-xPos;
+                    let diffY=evt.pageY-yPos;
+                    valX=lef+diffX;
+                    valY=top+diffY;
+                    //maxX=$(window).width()-itemW;
+                    maxY=boxContent.height()-itemH;
+                    valY = Math.min(Math.max(0,valY),maxY);
+                    $(itemcopy).css({"left":valX,"top":valY}); 
+                    setNumFun(); 
+                    itemArr.forEach((obj,key)=>{
+                      if(crashTest(itemcopy,obj)){
+                         obj.addClass("drag-set");
+                         targetObj=obj;
+                         itemcopy.attr("index-num",obj.attr("index-num"));
+                         itemSetFun(item,obj);
+                      }else{
+                         obj.removeClass("drag-set");
+                         // targetObj=null;
+                      }
+                    })
+                 }
+                 event.preventDefault();  
+              })
+              $(document).on("mouseup",()=>{
+                  if(draging){
+                    itemArr.forEach((obj,key)=>{
+                      obj.removeClass("drag-set");
+                    })  
+                  } 
+                  setNumFun();
+                  item.on("mousedown",null);
+                  $(document).on("mousemove",null);
+                  if(targetObj&&animTuff){
+                    //animTuff=false;
+                    animFun(targetObj,itemcopy);
                   }
-                })
-             }
-             event.preventDefault();  
-          })
-          $(document).on("mouseup",()=>{
-              if(draging){
-                itemArr.forEach((obj,key)=>{
-                  obj.removeClass("drag-set");
-                })  
-              } 
-              setNumFun();
-              item.on("mousedown",null);
-              $(document).on("mousemove",null);
-              if(targetObj){
-                animFun(targetObj,itemcopy);
-              }
-              draging=false; 
-          })  
+                  draging=false; 
+              })  
+ 
+           })
        }
        function animFun(obj1,obj2){
+          console.log(111);
           let targetTop=obj1.position().top;
           let targetLeft=obj1.position().left;
           obj2.animate({top:targetTop,left:targetLeft},300,function(){
              $(obj2).remove();
+             animTuff=true;
              callBackFun();
           })
        }
