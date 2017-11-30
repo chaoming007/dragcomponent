@@ -1,6 +1,6 @@
 <template>
   <div>
-     <div class="drag-box" id="dragBox" v-drag="true">
+     <div class="drag-box" id="dragBox" v-drag="dat">
           <div class="drag-item">
              <div class="drag-item-tit">标题1</div>
              <div class="drag-item-content">内容1</div>
@@ -33,11 +33,21 @@ import  './direct.js'
 export default {
   data () {
     return {
-       
+       dat:{
+          tuff:true,
+          callBackGetDat:this.getDat
+       }
     }
   },
   methods:{
-      
+      getDat(dat){
+         if(dat){
+           console.log("排序后的顺序：",dat);
+         }
+      }
+  },
+  mounted(){
+     this.getDat();
   }
 
 }

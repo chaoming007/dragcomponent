@@ -1,14 +1,14 @@
 import Vue from 'vue'
 
 Vue.directive("drag",{
-   inserted(el,binding){
-       if(!binding.value){
+   inserted(el,binding){  
+       if(!binding.value.tuff){
          return;
        }
        let itemArr=[];
        let boxContent=$("#"+el.id);
-       let itemArrBox=boxContent.find(".drag-item"); 
-      
+       let itemArrBox=boxContent.children("div"); 
+       let animTuff=true;
        dragInitFun();
        /**
         * 获得拖拽元素容器
@@ -26,7 +26,7 @@ Vue.directive("drag",{
         * [设置编号]
         */
        function setNumFun(){  
-         let objBox=boxContent.find(".drag-item"); 
+         let objBox=boxContent.children("div"); 
          objBox.each((ind)=>{
             objBox.eq(ind).attr("index-num",ind);
          })  
@@ -38,12 +38,13 @@ Vue.directive("drag",{
        }
        function callBackFun(){
          let numDatArr=[];
-         let objBox=boxContent.find(".drag-item");
+         let objBox=boxContent.children("div");
          objBox.each((ind)=>{
             let num=objBox.eq(ind).attr("data-num");
             numDatArr.push(num);
          })
-          console.log(numDatArr); 
+         binding.value.callBackGetDat(numDatArr);
+         //console.log(numDatArr); 
        }
        /**
         * 拖拽事件处理
@@ -58,6 +59,10 @@ Vue.directive("drag",{
            let itemH=item.height();
            item.mousedown((event)=>{
                let evt=event.originalEvent;
+               if(!animTuff){
+                 return;
+               }
+               animTuff=false;
                xPos=evt.pageX;
                yPos=evt.pageY;
                lef=item.position().left;
@@ -96,30 +101,36 @@ Vue.directive("drag",{
                  }
                  event.preventDefault();  
               })
-              $(document).mouseup(()=>{
-                  setNumFun();
+              $(document).mouseup((event)=>{
+                  //setNumFun();
+                  if(lef==$(itemcopy).position().left && top==$(itemcopy).position().top && draging){
+                     $(itemcopy).remove();
+                     animTuff=true;
+                     draging=false;
+                     return;
+                  } 
                   if(draging){
                     itemArr.forEach((obj,key)=>{
                       obj.removeClass("drag-set");
                     })
                     if(targetObj){
                       animFun(targetObj,itemcopy);
-                    }  
-                  } 
-                  
-                  item.mousedown(function(){});
-                  $(document).mousemove(function(){});
+                    } 
+                  }   
+                  item.mousedown(null);
+                  $(document).mousemove(null);
+                  $(document).mouseup(null);
                   draging=false; 
               })  
  
            })
        }
        function animFun(obj1,obj2){
-          console.log(111);
           let targetTop=obj1.position().top;
           let targetLeft=obj1.position().left;
           obj2.animate({top:targetTop,left:targetLeft},300,function(){
              $(obj2).remove();
+             animTuff=true;
              callBackFun();
           })
        }
